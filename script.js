@@ -15,7 +15,7 @@
   // Define el tamaño del tablero
   let tamano = 10
   // Define la cantidad de bombas
-  let cantidadBomba = 2
+  let cantidadBomba = 10
   // Define el número de banderas que se han utilizado hasta el momento por defecto es 0
   let banderas = 0
   // Define una lista de cuadrados
@@ -39,6 +39,7 @@ function crearTablero() {
   const reordenadoArray = juegoArray.sort(() => Math.random() -0.5)
 
   for(let i = 0; i < tamano*tamano; i++) {
+    console.log(cuadrados)
     const cuadrado = document.createElement('div')
     cuadrado.setAttribute('id', i)
     cuadrado.classList.add(reordenadoArray[i])
@@ -56,6 +57,7 @@ function crearTablero() {
       añadeBandera(cuadrado)
     }
   }
+  
 
   //add numbers
   for (let i = 0; i < cuadrados.length; i++) {
@@ -232,6 +234,9 @@ function cambiarPartida(tipo){
       var ultimo = document.getElementById(i);
       tablero.removeChild(ultimo)
     }
+    banderas = 0
+    juegoAcabado = false
+    cuadrados = []
   }
   function cambiaTamano(tipo){
     if(tipo == "principiante"){
