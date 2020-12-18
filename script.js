@@ -8,13 +8,14 @@
   const tablero = document.querySelector('.tablero')
   // Obtiene las banderas que faltan
   const banderasRestantes = document.querySelector('#banderas-restantes')
-  console.log(banderasRestantes)
   // Obtiene el resultado
   const resultado = document.querySelector('#resultado')
+
+  const selectores = document.querySelectorAll(".selectores");
   // Define el tamaño del tablero
-  let tamano = 16
+  let tamano = 10
   // Define la cantidad de bombas
-  let cantidadBomba = 40
+  let cantidadBomba = 2
   // Define el número de banderas que se han utilizado hasta el momento por defecto es 0
   let banderas = 0
   // Define una lista de cuadrados
@@ -22,23 +23,20 @@
   // Indica si el juego se ha acabado
   let juegoAcabado = false
 
-crearTablero()
 
 
 //Función crea Tablero 
 function crearTablero() {
   // Indica el número de banderas que faltan por colocar
   banderasRestantes.innerHTML = cantidadBomba
+  //Adapta el tamaño del tablero en el css
+  cambiarTamonoTablero()
 
   //Genera un arra con las bombas y las posiciones validas y lo reordena de forma aleatoria
   const bombasArray = Array(cantidadBomba).fill('bomba')
-  console.log(bombasArray)
   const vacioArray = Array(tamano*tamano - cantidadBomba).fill('valid')
-  console.log(vacioArray)
   const juegoArray = vacioArray.concat(bombasArray)
-  console.log(juegoArray)
   const reordenadoArray = juegoArray.sort(() => Math.random() -0.5)
-  console.log(reordenadoArray)
 
   for(let i = 0; i < tamano*tamano; i++) {
     const cuadrado = document.createElement('div')
@@ -66,17 +64,24 @@ function crearTablero() {
     const esAristaDerecha = (i % tamano === tamano -1)
 
     if (cuadrados[i].classList.contains('valid')) {
+      // Lo comprubeba 
       if (i > 0 && !esAristaIzquierda && cuadrados[i -1].classList.contains('bomba')) total ++
-      if (i > 9 && !esAristaDerecha && cuadrados[i +1 -tamano].classList.contains('bomba')) total ++
-      if (i > 10 && cuadrados[i -tamano].classList.contains('bomba')) total ++
-      if (i > 11 && !esAristaIzquierda && cuadrados[i -1 -tamano].classList.contains('bomba')) total ++
-      if (i < 98 && !esAristaDerecha && cuadrados[i +1].classList.contains('bomba')) total ++
-      if (i < 90 && !esAristaIzquierda && cuadrados[i -1 +tamano].classList.contains('bomba')) total ++
-      if (i < 88 && !esAristaDerecha && cuadrados[i +1 +tamano].classList.contains('bomba')) total ++
-      if (i < 89 && cuadrados[i +tamano].classList.contains('bomba')) total ++
+      if (i > tamano-1 && !esAristaDerecha && cuadrados[i +1 -tamano].classList.contains('bomba')) total ++
+      if (i >= tamano && cuadrados[i -tamano].classList.contains('bomba')) total ++
+      if (i > tamano+1 && !esAristaIzquierda && cuadrados[i -1 -tamano].classList.contains('bomba')) total ++
+      if (i < (tamano*tamano)-1 && !esAristaDerecha && cuadrados[i +1].classList.contains('bomba')) total ++
+      if (i < (tamano*tamano)-tamano+1  && !esAristaIzquierda && cuadrados[i -1 +tamano].classList.contains('bomba')) total ++
+      if (i < (tamano*tamano)-tamano-1 && !esAristaDerecha && cuadrados[i +1 +tamano].classList.contains('bomba')) total ++
+      if (i < (tamano*tamano)-tamano && cuadrados[i +tamano].classList.contains('bomba')) total ++
       cuadrados[i].setAttribute('data', total)
     }
   }
+}
+
+function cambiarTamonoTablero() {
+  var ancho = tamano*30
+  tablero.style.width = `${String(ancho)}px`
+  tablero.style.height = `${String(ancho)}px`
 }
 
 //add Flag with right click
@@ -109,10 +114,14 @@ function click(cuadrado) {
     let total = cuadrado.getAttribute('data')
     if (total !=0) {
       cuadrado.classList.add('checked')
-      if (total == 1) cuadrado.classList.add('one')
-      if (total == 2) cuadrado.classList.add('two')
-      if (total == 3) cuadrado.classList.add('three')
-      if (total == 4) cuadrado.classList.add('four')
+      if (total == 1) cuadrado.classList.add('uno')
+      if (total == 2) cuadrado.classList.add('dos')
+      if (total == 3) cuadrado.classList.add('tres')
+      if (total == 4) cuadrado.classList.add('cuatro')
+      if (total == 5) cuadrado.classList.add('cinco')
+      if (total == 6) cuadrado.classList.add('seis')
+      if (total == 7) cuadrado.classList.add('siete')
+      if (total == 8) cuadrado.classList.add('ocho')
       cuadrado.innerHTML = total
       return
     }
@@ -134,43 +143,43 @@ function checkSquare(cuadrado, idActual) {
       const nuevoCuadrado = document.getElementById(nuevoId)
       click(nuevoCuadrado)
     }
-    if (idActual > 9 && !esAristaDerecha) {
+    if (idActual > tamano-1 && !esAristaDerecha) {
       const nuevoId = cuadrados[parseInt(idActual) +1 -tamano].id
       //const nuevoId = parseInt(idActual) +1 -tamano   ....refactor
       const nuevoCuadrado = document.getElementById(nuevoId)
       click(nuevoCuadrado)
     }
-    if (idActual > 10) {
+    if (idActual >= tamano) {
       const nuevoId = cuadrados[parseInt(idActual -tamano)].id
       //const nuevoId = parseInt(idActual) -tamano   ....refactor
       const nuevoCuadrado = document.getElementById(nuevoId)
       click(nuevoCuadrado)
     }
-    if (idActual > 11 && !esAristaIzquierda) {
+    if (idActual > tamano+1 && !esAristaIzquierda) {
       const nuevoId = cuadrados[parseInt(idActual) -1 -tamano].id
       //const nuevoId = parseInt(idActual) -1 -tamano   ....refactor
       const nuevoCuadrado = document.getElementById(nuevoId)
       click(nuevoCuadrado)
     }
-    if (idActual < 98 && !esAristaDerecha) {
+    if (idActual < (tamano*tamano)-1 && !esAristaDerecha) {
       const nuevoId = cuadrados[parseInt(idActual) +1].id
       //const nuevoId = parseInt(idActual) +1   ....refactor
       const nuevoCuadrado = document.getElementById(nuevoId)
       click(nuevoCuadrado)
     }
-    if (idActual < 90 && !esAristaIzquierda) {
+    if (idActual < (tamano*tamano)-tamano+1 && !esAristaIzquierda) {
       const nuevoId = cuadrados[parseInt(idActual) -1 +tamano].id
       //const nuevoId = parseInt(idActual) -1 +tamano   ....refactor
       const nuevoCuadrado = document.getElementById(nuevoId)
       click(nuevoCuadrado)
     }
-    if (idActual < 88 && !esAristaDerecha) {
+    if (idActual < (tamano*tamano)-tamano-1 && !esAristaDerecha) {
       const nuevoId = cuadrados[parseInt(idActual) +1 +tamano].id
       //const nuevoId = parseInt(idActual) +1 +tamano   ....refactor
       const nuevoCuadrado = document.getElementById(nuevoId)
       click(nuevoCuadrado)
     }
-    if (idActual < 89) {
+    if (idActual < (tamano*tamano)-tamano) {
       const nuevoId = cuadrados[parseInt(idActual) +tamano].id
       //const nuevoId = parseInt(idActual) +tamano   ....refactor
       const nuevoCuadrado = document.getElementById(nuevoId)
@@ -210,6 +219,46 @@ let matches = 0
   }
 }
 
+
+//Ejecución del tablero
+
+crearTablero()
+
+selectores.forEach((selector) => selector.addEventListener("click", (e) => cambiarPartida(e.target.id)));
+
+function cambiarPartida(tipo){
+  function eliminarTablero(){
+    for(let i = 0; i < tamano*tamano; i++) {
+      var ultimo = document.getElementById(i);
+      tablero.removeChild(ultimo)
+    }
+  }
+  function cambiaTamano(tipo){
+    if(tipo == "principiante"){
+      tamano = 10
+      cantidadBomba = 10
+    }
+    if(tipo == "intermedio"){
+      tamano = 12
+      cantidadBomba = 20
+    }
+    if(tipo == "avanzado"){
+      tamano = 16
+      cantidadBomba = 40
+    }
+    if(tipo == "experto"){
+      tamano = 20
+      cantidadBomba = 100
+    }
+  }
+
+  // Elimina el tablero actual 
+  eliminarTablero()
+  // Cambia el tamaño del buscamina actual
+  cambiaTamano(tipo)
+  // Crea el nuevo Tablero del buscamina
+  crearTablero()
+}
 
 
 

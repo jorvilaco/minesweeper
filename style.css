@@ -1,11 +1,9 @@
-.container {
+.lienzo {
   width: 500px;
   align-content: center;
 }
 
 .tablero {
-  height: 640px;
-  width: 640px;
   display: flex;
   flex-wrap: wrap;
   background-color: #dcd6bc;
@@ -16,22 +14,22 @@
 }
 
 div {
-  font-size: 25px;
+  font-size: 20px;
   text-align: center;
   font-family: 'Roboto Mono', monospace;
 
 }
 .valid {
-  height: 40px;
-  width: 40px;
+  height: 30px;
+  width: 30px;
   border: 5px solid;
   border-color: #f5f3eb #bab7a9 #bab7a9 #fff9db;
   box-sizing: border-box;
 }
 
 .checked {
-  height: 40px;
-  width: 40px;
+  height: 30px;
+  width: 30px;
   border: 2px solid;
   background-color: #cecab7;
   border-color: #9c998d;
@@ -39,27 +37,39 @@ div {
 }
 
 .bomba {
-  height: 40px;
-  width: 40px;
+  height: 30px;
+  width: 30px;
   border: 5px solid;
   border-color: #f5f3eb #bab7a9 #bab7a9 #fff9db;
   box-sizing: border-box;
 }
 
-.one {
+.uno {
   color: #e76346;
 }
 
-.two {
+.dos {
   color: #4199d3;
 }
 
-.three {
+.tres {
   color: #57da59;
 }
 
-.four{
+.cuatro{
   color: #bb41d3;
+}
+.cinco{
+  color: #fffb00;
+}
+.seis{
+  color: #ff00b3;
+}
+.siete{
+  color: #00ffea;
+}
+.ocho{
+  color: #000000;
 }
 
 #resultado {
