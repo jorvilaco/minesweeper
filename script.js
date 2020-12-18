@@ -1,191 +1,220 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const grid = document.querySelector('.grid')
-  const flagsLeft = document.querySelector('#flags-left')
-  const result = document.querySelector('#result')
-  let width = 10
-  let bombAmount = 20
-  let flags = 0
-  let squares = []
-  let isGameOver = false
 
-  //create Board
-  function createBoard() {
-    flagsLeft.innerHTML = bombAmount
-
-    //get shuffled game array with random bombs
-    const bombsArray = Array(bombAmount).fill('bomb')
-    const emptyArray = Array(width*width - bombAmount).fill('valid')
-    const gameArray = emptyArray.concat(bombsArray)
-    const shuffledArray = gameArray.sort(() => Math.random() -0.5)
-
-    for(let i = 0; i < width*width; i++) {
-      const square = document.createElement('div')
-      square.setAttribute('id', i)
-      square.classList.add(shuffledArray[i])
-      grid.appendChild(square)
-      squares.push(square)
-
-      //normal click
-      square.addEventListener('click', function(e) {
-        click(square)
-      })
-
-      //cntrl and left click
-      square.oncontextmenu = function(e) {
-        e.preventDefault()
-        addFlag(square)
-      }
-    }
-
-    //add numbers
-    for (let i = 0; i < squares.length; i++) {
-      let total = 0
-      const isLeftEdge = (i % width === 0)
-      const isRightEdge = (i % width === width -1)
-
-      if (squares[i].classList.contains('valid')) {
-        if (i > 0 && !isLeftEdge && squares[i -1].classList.contains('bomb')) total ++
-        if (i > 9 && !isRightEdge && squares[i +1 -width].classList.contains('bomb')) total ++
-        if (i > 10 && squares[i -width].classList.contains('bomb')) total ++
-        if (i > 11 && !isLeftEdge && squares[i -1 -width].classList.contains('bomb')) total ++
-        if (i < 98 && !isRightEdge && squares[i +1].classList.contains('bomb')) total ++
-        if (i < 90 && !isLeftEdge && squares[i -1 +width].classList.contains('bomb')) total ++
-        if (i < 88 && !isRightEdge && squares[i +1 +width].classList.contains('bomb')) total ++
-        if (i < 89 && squares[i +width].classList.contains('bomb')) total ++
-        squares[i].setAttribute('data', total)
-      }
-    }
-  }
-  createBoard()
-
-  //add Flag with right click
-  function addFlag(square) {
-    if (isGameOver) return
-    if (!square.classList.contains('checked') && (flags < bombAmount)) {
-      if (!square.classList.contains('flag')) {
-        square.classList.add('flag')
-        square.innerHTML = ' 🚩'
-        flags ++
-        flagsLeft.innerHTML = bombAmount- flags
-        checkForWin()
-      } else {
-        square.classList.remove('flag')
-        square.innerHTML = ''
-        flags --
-        flagsLeft.innerHTML = bombAmount- flags
-      }
-    }
-  }
-
-  //click on square actions
-  function click(square) {
-    let currentId = square.id
-    if (isGameOver) return
-    if (square.classList.contains('checked') || square.classList.contains('flag')) return
-    if (square.classList.contains('bomb')) {
-      gameOver(square)
-    } else {
-      let total = square.getAttribute('data')
-      if (total !=0) {
-        square.classList.add('checked')
-        if (total == 1) square.classList.add('one')
-        if (total == 2) square.classList.add('two')
-        if (total == 3) square.classList.add('three')
-        if (total == 4) square.classList.add('four')
-        square.innerHTML = total
-        return
-      }
-      checkSquare(square, currentId)
-    }
-    square.classList.add('checked')
-  }
+/*      Variables Globales                   */
+/* ------------------------------------------*/
 
 
-  //check neighboring squares once square is clicked
-  function checkSquare(square, currentId) {
-    const isLeftEdge = (currentId % width === 0)
-    const isRightEdge = (currentId % width === width -1)
 
-    setTimeout(() => {
-      if (currentId > 0 && !isLeftEdge) {
-        const newId = squares[parseInt(currentId) -1].id
-        //const newId = parseInt(currentId) - 1   ....refactor
-        const newSquare = document.getElementById(newId)
-        click(newSquare)
-      }
-      if (currentId > 9 && !isRightEdge) {
-        const newId = squares[parseInt(currentId) +1 -width].id
-        //const newId = parseInt(currentId) +1 -width   ....refactor
-        const newSquare = document.getElementById(newId)
-        click(newSquare)
-      }
-      if (currentId > 10) {
-        const newId = squares[parseInt(currentId -width)].id
-        //const newId = parseInt(currentId) -width   ....refactor
-        const newSquare = document.getElementById(newId)
-        click(newSquare)
-      }
-      if (currentId > 11 && !isLeftEdge) {
-        const newId = squares[parseInt(currentId) -1 -width].id
-        //const newId = parseInt(currentId) -1 -width   ....refactor
-        const newSquare = document.getElementById(newId)
-        click(newSquare)
-      }
-      if (currentId < 98 && !isRightEdge) {
-        const newId = squares[parseInt(currentId) +1].id
-        //const newId = parseInt(currentId) +1   ....refactor
-        const newSquare = document.getElementById(newId)
-        click(newSquare)
-      }
-      if (currentId < 90 && !isLeftEdge) {
-        const newId = squares[parseInt(currentId) -1 +width].id
-        //const newId = parseInt(currentId) -1 +width   ....refactor
-        const newSquare = document.getElementById(newId)
-        click(newSquare)
-      }
-      if (currentId < 88 && !isRightEdge) {
-        const newId = squares[parseInt(currentId) +1 +width].id
-        //const newId = parseInt(currentId) +1 +width   ....refactor
-        const newSquare = document.getElementById(newId)
-        click(newSquare)
-      }
-      if (currentId < 89) {
-        const newId = squares[parseInt(currentId) +width].id
-        //const newId = parseInt(currentId) +width   ....refactor
-        const newSquare = document.getElementById(newId)
-        click(newSquare)
-      }
-    }, 10)
-  }
+  // Obtiene el tablero de la partida
+  const tablero = document.querySelector('.tablero')
+  // Obtiene las banderas que faltan
+  const banderasRestantes = document.querySelector('#banderas-restantes')
+  console.log(banderasRestantes)
+  // Obtiene el resultado
+  const resultado = document.querySelector('#resultado')
+  // Define el tamaño del tablero
+  let tamano = 16
+  // Define la cantidad de bombas
+  let cantidadBomba = 40
+  // Define el número de banderas que se han utilizado hasta el momento por defecto es 0
+  let banderas = 0
+  // Define una lista de cuadrados
+  let cuadrados = []
+  // Indica si el juego se ha acabado
+  let juegoAcabado = false
 
-  //game over
-  function gameOver(square) {
-    result.innerHTML = 'BOOM! Game Over!'
-    isGameOver = true
+crearTablero()
 
-    //show ALL the bombs
-    squares.forEach(square => {
-      if (square.classList.contains('bomb')) {
-        square.innerHTML = '💣'
-        square.classList.remove('bomb')
-        square.classList.add('checked')
-      }
+
+//Función crea Tablero 
+function crearTablero() {
+  // Indica el número de banderas que faltan por colocar
+  banderasRestantes.innerHTML = cantidadBomba
+
+  //Genera un arra con las bombas y las posiciones validas y lo reordena de forma aleatoria
+  const bombasArray = Array(cantidadBomba).fill('bomba')
+  console.log(bombasArray)
+  const vacioArray = Array(tamano*tamano - cantidadBomba).fill('valid')
+  console.log(vacioArray)
+  const juegoArray = vacioArray.concat(bombasArray)
+  console.log(juegoArray)
+  const reordenadoArray = juegoArray.sort(() => Math.random() -0.5)
+  console.log(reordenadoArray)
+
+  for(let i = 0; i < tamano*tamano; i++) {
+    const cuadrado = document.createElement('div')
+    cuadrado.setAttribute('id', i)
+    cuadrado.classList.add(reordenadoArray[i])
+    tablero.appendChild(cuadrado)
+    cuadrados.push(cuadrado)
+
+    //normal click
+    cuadrado.addEventListener('click', function(e) {
+      click(cuadrado)
     })
-  }
 
-  //check for win
-  function checkForWin() {
-    ///simplified win argument
-  let matches = 0
-
-    for (let i = 0; i < squares.length; i++) {
-      if (squares[i].classList.contains('flag') && squares[i].classList.contains('bomb')) {
-        matches ++
-      }
-      if (matches === bombAmount) {
-        result.innerHTML = 'YOU WIN!'
-        isGameOver = true
-      }
+    //cntrl and left click
+    cuadrado.oncontextmenu = function(e) {
+      e.preventDefault()
+      añadeBandera(cuadrado)
     }
   }
-})
+
+  //add numbers
+  for (let i = 0; i < cuadrados.length; i++) {
+    let total = 0
+    const esAristaIzquierda = (i % tamano === 0)
+    const esAristaDerecha = (i % tamano === tamano -1)
+
+    if (cuadrados[i].classList.contains('valid')) {
+      if (i > 0 && !esAristaIzquierda && cuadrados[i -1].classList.contains('bomba')) total ++
+      if (i > 9 && !esAristaDerecha && cuadrados[i +1 -tamano].classList.contains('bomba')) total ++
+      if (i > 10 && cuadrados[i -tamano].classList.contains('bomba')) total ++
+      if (i > 11 && !esAristaIzquierda && cuadrados[i -1 -tamano].classList.contains('bomba')) total ++
+      if (i < 98 && !esAristaDerecha && cuadrados[i +1].classList.contains('bomba')) total ++
+      if (i < 90 && !esAristaIzquierda && cuadrados[i -1 +tamano].classList.contains('bomba')) total ++
+      if (i < 88 && !esAristaDerecha && cuadrados[i +1 +tamano].classList.contains('bomba')) total ++
+      if (i < 89 && cuadrados[i +tamano].classList.contains('bomba')) total ++
+      cuadrados[i].setAttribute('data', total)
+    }
+  }
+}
+
+//add Flag with right click
+function añadeBandera(cuadrado) {
+  if (juegoAcabado) return
+  if (!cuadrado.classList.contains('checked') && (banderas <= cantidadBomba)) {
+    if (!cuadrado.classList.contains('flag') && (banderas < cantidadBomba)) {
+      cuadrado.classList.add('flag')
+      cuadrado.innerHTML = ' 🚩'
+      banderas ++
+      banderasRestantes.innerHTML = cantidadBomba- banderas
+      checkForWin()
+    } else if (cuadrado.classList.contains('flag')) {
+      cuadrado.classList.remove('flag')
+      cuadrado.innerHTML = ''
+      banderas --
+      banderasRestantes.innerHTML = cantidadBomba- banderas
+    }
+  }
+}
+
+//click on cuadrado actions
+function click(cuadrado) {
+  let idActual = cuadrado.id
+  if (juegoAcabado) return
+  if (cuadrado.classList.contains('checked') || cuadrado.classList.contains('flag')) return
+  if (cuadrado.classList.contains('bomba')) {
+    gameOver(cuadrado)
+  } else {
+    let total = cuadrado.getAttribute('data')
+    if (total !=0) {
+      cuadrado.classList.add('checked')
+      if (total == 1) cuadrado.classList.add('one')
+      if (total == 2) cuadrado.classList.add('two')
+      if (total == 3) cuadrado.classList.add('three')
+      if (total == 4) cuadrado.classList.add('four')
+      cuadrado.innerHTML = total
+      return
+    }
+    checkSquare(cuadrado, idActual)
+  }
+  cuadrado.classList.add('checked')
+}
+
+
+//check neighboring cuadrados once cuadrado is clicked
+function checkSquare(cuadrado, idActual) {
+  const esAristaIzquierda = (idActual % tamano === 0)
+  const esAristaDerecha = (idActual % tamano === tamano -1)
+
+  setTimeout(() => {
+    if (idActual > 0 && !esAristaIzquierda) {
+      const nuevoId = cuadrados[parseInt(idActual) -1].id
+      //const nuevoId = parseInt(idActual) - 1   ....refactor
+      const nuevoCuadrado = document.getElementById(nuevoId)
+      click(nuevoCuadrado)
+    }
+    if (idActual > 9 && !esAristaDerecha) {
+      const nuevoId = cuadrados[parseInt(idActual) +1 -tamano].id
+      //const nuevoId = parseInt(idActual) +1 -tamano   ....refactor
+      const nuevoCuadrado = document.getElementById(nuevoId)
+      click(nuevoCuadrado)
+    }
+    if (idActual > 10) {
+      const nuevoId = cuadrados[parseInt(idActual -tamano)].id
+      //const nuevoId = parseInt(idActual) -tamano   ....refactor
+      const nuevoCuadrado = document.getElementById(nuevoId)
+      click(nuevoCuadrado)
+    }
+    if (idActual > 11 && !esAristaIzquierda) {
+      const nuevoId = cuadrados[parseInt(idActual) -1 -tamano].id
+      //const nuevoId = parseInt(idActual) -1 -tamano   ....refactor
+      const nuevoCuadrado = document.getElementById(nuevoId)
+      click(nuevoCuadrado)
+    }
+    if (idActual < 98 && !esAristaDerecha) {
+      const nuevoId = cuadrados[parseInt(idActual) +1].id
+      //const nuevoId = parseInt(idActual) +1   ....refactor
+      const nuevoCuadrado = document.getElementById(nuevoId)
+      click(nuevoCuadrado)
+    }
+    if (idActual < 90 && !esAristaIzquierda) {
+      const nuevoId = cuadrados[parseInt(idActual) -1 +tamano].id
+      //const nuevoId = parseInt(idActual) -1 +tamano   ....refactor
+      const nuevoCuadrado = document.getElementById(nuevoId)
+      click(nuevoCuadrado)
+    }
+    if (idActual < 88 && !esAristaDerecha) {
+      const nuevoId = cuadrados[parseInt(idActual) +1 +tamano].id
+      //const nuevoId = parseInt(idActual) +1 +tamano   ....refactor
+      const nuevoCuadrado = document.getElementById(nuevoId)
+      click(nuevoCuadrado)
+    }
+    if (idActual < 89) {
+      const nuevoId = cuadrados[parseInt(idActual) +tamano].id
+      //const nuevoId = parseInt(idActual) +tamano   ....refactor
+      const nuevoCuadrado = document.getElementById(nuevoId)
+      click(nuevoCuadrado)
+    }
+  }, 10)
+}
+
+//game over
+function gameOver(cuadrado) {
+  resultado.innerHTML = 'BOOM! Game Over!'
+  juegoAcabado = true
+
+  //show ALL the bombs
+  cuadrados.forEach(cuadrado => {
+    if (cuadrado.classList.contains('bomba')) {
+      cuadrado.innerHTML = '💣'
+      cuadrado.classList.remove('bomba')
+      cuadrado.classList.add('checked')
+    }
+  })
+}
+
+//check for win
+function checkForWin() {
+  ///simplified win argument
+let matches = 0
+
+  for (let i = 0; i < cuadrados.length; i++) {
+    if (cuadrados[i].classList.contains('flag') && cuadrados[i].classList.contains('bomba')) {
+      matches ++
+    }
+    if (matches === cantidadBomba) {
+      resultado.innerHTML = 'YOU WIN!'
+      juegoAcabado = true
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
