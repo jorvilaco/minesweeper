@@ -10,8 +10,11 @@
   const banderasRestantes = document.querySelector('#banderas-restantes')
   // Obtiene el resultado
   const resultado = document.querySelector('#resultado')
-
-  const selectores = document.querySelectorAll(".selectores");
+  // Obtiene la variable el id del selector que se ha pulsado
+  const selectores = document.querySelectorAll(".selectores")
+  selectores.forEach((selector) => selector.addEventListener("click", (e) => cambiarPartida(e.target.id)))
+  // Obtiene la variable tiempo
+  const tiempo = document.getElementById("tiempo")
   // Define el tamaño del tablero
   let tamano = 10
   // Define la cantidad de bombas
@@ -22,11 +25,27 @@
   let cuadrados = []
   // Indica si el juego se ha acabado
   let juegoAcabado = false
+  // Indica el tiempo que se lleva de juego
+  let tiempoJuego 
+  let tiempoActivo = false
 
 
+//Ejecución del tablero al cargar la página web
+
+crearTablero()
+
+function cambiarTamonoTablero() {
+  var ancho = tamano*30
+  tablero.style.width = `${String(ancho)}px`
+  tablero.style.height = `${String(ancho)}px`
+}
 
 //Función crea Tablero 
 function crearTablero() {
+
+  // Adapta en tamaño del css del tablaro para adaptarlo al numero de
+  
+
   // Indica el número de banderas que faltan por colocar
   banderasRestantes.innerHTML = cantidadBomba
   //Adapta el tamaño del tablero en el css
@@ -34,24 +53,25 @@ function crearTablero() {
 
   //Genera un arra con las bombas y las posiciones validas y lo reordena de forma aleatoria
   const bombasArray = Array(cantidadBomba).fill('bomba')
-  const vacioArray = Array(tamano*tamano - cantidadBomba).fill('valid')
+  const vacioArray = Array(tamano*tamano - cantidadBomba).fill('valido')
   const juegoArray = vacioArray.concat(bombasArray)
   const reordenadoArray = juegoArray.sort(() => Math.random() -0.5)
 
+  // Genera el código HTML en función del tipo de cuadrado que se haya obtenido y generas los 
+  //eventos para cada cuadrado
   for(let i = 0; i < tamano*tamano; i++) {
-    console.log(cuadrados)
     const cuadrado = document.createElement('div')
     cuadrado.setAttribute('id', i)
     cuadrado.classList.add(reordenadoArray[i])
     tablero.appendChild(cuadrado)
     cuadrados.push(cuadrado)
 
-    //normal click
+    //click normal
     cuadrado.addEventListener('click', function(e) {
       click(cuadrado)
     })
 
-    //cntrl and left click
+    //click derecho del ratón
     cuadrado.oncontextmenu = function(e) {
       e.preventDefault()
       añadeBandera(cuadrado)
@@ -59,13 +79,14 @@ function crearTablero() {
   }
   
 
-  //add numbers
+  //Añade los números al html que despues utilizaremos para mostrar cuantas bombas tenemos alrededor
   for (let i = 0; i < cuadrados.length; i++) {
     let total = 0
     const esAristaIzquierda = (i % tamano === 0)
     const esAristaDerecha = (i % tamano === tamano -1)
 
-    if (cuadrados[i].classList.contains('valid')) {
+    // Solo añade el valor en los cuadrados que no son bombas
+    if (cuadrados[i].classList.contains('valido')) {
       // Lo comprubeba 
       if (i > 0 && !esAristaIzquierda && cuadrados[i -1].classList.contains('bomba')) total ++
       if (i > tamano-1 && !esAristaDerecha && cuadrados[i +1 -tamano].classList.contains('bomba')) total ++
@@ -80,24 +101,24 @@ function crearTablero() {
   }
 }
 
-function cambiarTamonoTablero() {
-  var ancho = tamano*30
-  tablero.style.width = `${String(ancho)}px`
-  tablero.style.height = `${String(ancho)}px`
-}
 
-//add Flag with right click
+
+//Añade las banderas con el botón derecho del raton
 function añadeBandera(cuadrado) {
+  // Si el juego ya ha acabado sal de la función, evita que se añadan banderas cuando ya ha terminado la partida
   if (juegoAcabado) return
-  if (!cuadrado.classList.contains('checked') && (banderas <= cantidadBomba)) {
-    if (!cuadrado.classList.contains('flag') && (banderas < cantidadBomba)) {
-      cuadrado.classList.add('flag')
+  // Si el cuadrado no ha sido chuequeado previamente y no contiene ninguna bandera, añadela
+  if (!cuadrado.classList.contains('chequeado') && (banderas <= cantidadBomba)) {
+    if (!cuadrado.classList.contains('bandera') && (banderas < cantidadBomba)) {
+      cuadrado.classList.add('bandera')
       cuadrado.innerHTML = ' 🚩'
       banderas ++
       banderasRestantes.innerHTML = cantidadBomba- banderas
-      checkForWin()
-    } else if (cuadrado.classList.contains('flag')) {
-      cuadrado.classList.remove('flag')
+      compruebaGanado()
+    } 
+    //Si no  ha sido chequeado y ya contiene una bandera, simplemente quitar la bandera
+    else if (cuadrado.classList.contains('bandera')) {
+      cuadrado.classList.remove('bandera')
       cuadrado.innerHTML = ''
       banderas --
       banderasRestantes.innerHTML = cantidadBomba- banderas
@@ -105,17 +126,32 @@ function añadeBandera(cuadrado) {
   }
 }
 
-//click on cuadrado actions
+//Si hacemos click normal
 function click(cuadrado) {
+
+  // Función que nos permite activar el timer
+  function activaTiempo(){
+    tiempoJuego = setInterval(actualizaTiempo, 1000)
+    tiempoActivo = true
+  }
+  
+  // obtenemos el id del cuadrado
   let idActual = cuadrado.id
+  // Si el tiempo no ha sido activado lo activamos
+  if (!tiempoActivo) activaTiempo()
+  // Si el juego ya ha terminado nos salimos
   if (juegoAcabado) return
-  if (cuadrado.classList.contains('checked') || cuadrado.classList.contains('flag')) return
+  // Si el cuadrado ha sido chequeado o contiene una bandera nos salimos
+  if (cuadrado.classList.contains('chequeado') || cuadrado.classList.contains('bandera')) return
+  // Si contiene una bomba simplemente acaba el juego
   if (cuadrado.classList.contains('bomba')) {
     gameOver(cuadrado)
-  } else {
+  } 
+  // En caso contrario lo descubrimos y colocamos el valor que contiene en el data que sera visible
+  else {
     let total = cuadrado.getAttribute('data')
     if (total !=0) {
-      cuadrado.classList.add('checked')
+      cuadrado.classList.add('chequeado')
       if (total == 1) cuadrado.classList.add('uno')
       if (total == 2) cuadrado.classList.add('dos')
       if (total == 3) cuadrado.classList.add('tres')
@@ -127,17 +163,21 @@ function click(cuadrado) {
       cuadrado.innerHTML = total
       return
     }
-    checkSquare(cuadrado, idActual)
+    // Solo llegamos a este caso si el cuadrado es un cuadrado que permite expandirse 
+    chequeaCuadrado(cuadrado, idActual)
   }
-  cuadrado.classList.add('checked')
+  cuadrado.classList.add('chequeado')
 }
 
 
-//check neighboring cuadrados once cuadrado is clicked
-function checkSquare(cuadrado, idActual) {
+//cchequeamos los cuadrados vecinos de un cuadrado que permite expansión. Este método funciona 
+// ya que contamos con que los cuadrados vecinos de un cuadrado en expansión no contienen bombas
+function chequeaCuadrado(cuadrado, idActual) {
+  // Determia si el cuadrado esta situado en los limites de la derecha y de la izquierda
   const esAristaIzquierda = (idActual % tamano === 0)
   const esAristaDerecha = (idActual % tamano === tamano -1)
 
+  // Simplemente clikeamos sobre los 8 cuadrados vecinos en caso de que exista cuadrado
   setTimeout(() => {
     if (idActual > 0 && !esAristaIzquierda) {
       const nuevoId = cuadrados[parseInt(idActual) -1].id
@@ -192,43 +232,42 @@ function checkSquare(cuadrado, idActual) {
 
 //game over
 function gameOver(cuadrado) {
-  resultado.innerHTML = 'BOOM! Game Over!'
+  resultado.innerHTML = 'BOMBA!! HAS PERDIDO'
   juegoAcabado = true
+  resetearTiempo()
 
   //show ALL the bombs
   cuadrados.forEach(cuadrado => {
     if (cuadrado.classList.contains('bomba')) {
       cuadrado.innerHTML = '💣'
       cuadrado.classList.remove('bomba')
-      cuadrado.classList.add('checked')
+      cuadrado.classList.add('chequeado')
     }
   })
 }
 
 //check for win
-function checkForWin() {
+function compruebaGanado() {
   ///simplified win argument
 let matches = 0
 
   for (let i = 0; i < cuadrados.length; i++) {
-    if (cuadrados[i].classList.contains('flag') && cuadrados[i].classList.contains('bomba')) {
+    if (cuadrados[i].classList.contains('bandera') && cuadrados[i].classList.contains('bomba')) {
       matches ++
     }
     if (matches === cantidadBomba) {
-      resultado.innerHTML = 'YOU WIN!'
+      resultado.innerHTML = 'HAS GANADO!'
       juegoAcabado = true
+      resetearTiempo()
     }
   }
 }
 
 
-//Ejecución del tablero
 
-crearTablero()
-
-selectores.forEach((selector) => selector.addEventListener("click", (e) => cambiarPartida(e.target.id)));
-
+// Cambia el tipo de partida o la resetea a su estado inicial
 function cambiarPartida(tipo){
+  
   function eliminarTablero(){
     for(let i = 0; i < tamano*tamano; i++) {
       var ultimo = document.getElementById(i);
@@ -237,23 +276,27 @@ function cambiarPartida(tipo){
     banderas = 0
     juegoAcabado = false
     cuadrados = []
+    resultado.innerHTML = ""
   }
+
   function cambiaTamano(tipo){
-    if(tipo == "principiante"){
-      tamano = 10
-      cantidadBomba = 10
-    }
-    if(tipo == "intermedio"){
-      tamano = 12
-      cantidadBomba = 20
-    }
-    if(tipo == "avanzado"){
-      tamano = 16
-      cantidadBomba = 40
-    }
-    if(tipo == "experto"){
-      tamano = 20
-      cantidadBomba = 100
+    switch (tipo) {
+      case "principiante":
+        tamano = 10
+        cantidadBomba = 10
+        break
+      case "intermedio":
+        tamano = 12
+        cantidadBomba = 20
+        break
+      case "avanzado":
+        tamano = 16
+        cantidadBomba = 40
+        break
+      case "experto":
+        tamano = 20
+        cantidadBomba = 100
+        break
     }
   }
 
@@ -263,11 +306,25 @@ function cambiarPartida(tipo){
   cambiaTamano(tipo)
   // Crea el nuevo Tablero del buscamina
   crearTablero()
+  // Reseta el contador de tiempo
+  if (tiempoActivo) resetearTiempo()
+  tiempo.innerHTML = 0
 }
 
 
 
+//
+function actualizaTiempo() {
+  var contador = parseInt(tiempo.innerHTML)
+  contador = contador +1
+  tiempo.innerHTML = contador
+}
 
+
+function resetearTiempo(){
+  clearInterval(tiempoJuego);
+  tiempoActivo = false
+}
 
 
 
