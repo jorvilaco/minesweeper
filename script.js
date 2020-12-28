@@ -230,13 +230,13 @@ function chequeaCuadrado(cuadrado, idActual) {
   }, 10)
 }
 
-//game over
+//El juego ha terminado función que se ejecuta cuando clickeamos sobre una bomba
 function gameOver(cuadrado) {
   resultado.innerHTML = 'BOMBA!! HAS PERDIDO'
   juegoAcabado = true
   resetearTiempo()
 
-  //show ALL the bombs
+  //Muestra todas las bombas que había en la partida
   cuadrados.forEach(cuadrado => {
     if (cuadrado.classList.contains('bomba')) {
       cuadrado.innerHTML = '💣'
@@ -246,15 +246,17 @@ function gameOver(cuadrado) {
   })
 }
 
-//check for win
+//Comprueba si hemos ganado la partida
 function compruebaGanado() {
-  ///simplified win argument
+  ///
 let matches = 0
 
   for (let i = 0; i < cuadrados.length; i++) {
     if (cuadrados[i].classList.contains('bandera') && cuadrados[i].classList.contains('bomba')) {
       matches ++
     }
+    // Comprueba si en número de banderas colocadas correctamenes(banderas que están encima de una bomba) es igual 
+    // al número de bombas
     if (matches === cantidadBomba) {
       resultado.innerHTML = 'HAS GANADO!'
       juegoAcabado = true
@@ -263,22 +265,23 @@ let matches = 0
   }
 }
 
-
-
 // Cambia el tipo de partida o la resetea a su estado inicial
 function cambiarPartida(tipo){
   
+  // Elimina el tablero de juego para poder crear uno nuevo
   function eliminarTablero(){
     for(let i = 0; i < tamano*tamano; i++) {
       var ultimo = document.getElementById(i);
       tablero.removeChild(ultimo)
     }
+    // resetea numero de banderas la variable juego acabado, los cuadrados y el resultado.
     banderas = 0
     juegoAcabado = false
     cuadrados = []
     resultado.innerHTML = ""
   }
 
+  // En caso de seleccionar un tipo diferente de partida cambia las caracteristicas
   function cambiaTamano(tipo){
     switch (tipo) {
       case "principiante":
@@ -311,16 +314,14 @@ function cambiarPartida(tipo){
   tiempo.innerHTML = 0
 }
 
-
-
-//
+// Contador para que se actualiza en función de la variable tiempo
 function actualizaTiempo() {
   var contador = parseInt(tiempo.innerHTML)
   contador = contador +1
   tiempo.innerHTML = contador
 }
 
-
+// Función que elimina el contador de tiempo actual
 function resetearTiempo(){
   clearInterval(tiempoJuego);
   tiempoActivo = false
